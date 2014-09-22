@@ -18,7 +18,7 @@ public class Enemy : MonoBehaviour {
 		UpdateMove ();
 	}
 
-	protected void UpdateMove()
+	protected virtual void UpdateMove()
 	{
 		m_timer -= Time.deltaTime;
 		if (m_timer <= 0) {

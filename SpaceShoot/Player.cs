@@ -9,9 +9,14 @@ public class Player : MonoBehaviour {
 	public Transform m_rocket;
 	float m_rocketRate = 0;
 
+	public AudioClip m_shootClip;//声音
+	protected AudioSource m_audio;//声音源
+	public Transform m_explosionFX;//爆炸特效
+
 	// Use this for initialization
 	void Start () {
 		m_transform = this.transform;
+		m_audio = this.audio;
 	}
 	
 	// Update is called once per frame
@@ -39,6 +44,7 @@ public class Player : MonoBehaviour {
 			m_rocketRate=0.1f;
 			if (Input.GetKey (KeyCode.Space) || Input.GetMouseButton (0)) {
 				Instantiate (m_rocket,m_transform.position,m_transform.rotation);
+				m_audio.PlayOneShot(m_shootClip);//播放声音
 			}
 		}
 	}
@@ -51,6 +57,7 @@ public class Player : MonoBehaviour {
 			m_life-=1;
 			if(m_life<=0)
 			{
+				Instantiate(m_explosionFX,m_transform.position,Quaternion.identity);
 				Destroy(this.gameObject);
 			}
 		}
