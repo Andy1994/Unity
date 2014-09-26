@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-[AddComponentMenu("MyGame/Enemy")]
 
 public class Enemy : MonoBehaviour {
 	public float m_speed = 1;
@@ -8,6 +7,7 @@ public class Enemy : MonoBehaviour {
 	protected float m_timer = 1.5f;//变向间隔时间
 	protected Transform m_transform;
 	public float m_life = 10;
+	public int m_point = 10;
 	// Use this for initialization
 	void Start () {
 		m_transform = this.transform;
@@ -38,6 +38,8 @@ public class Enemy : MonoBehaviour {
 				m_life-=rocket.m_power;
 				if(m_life<=0)
 				{
+					GameManager.Instance.AddScore(m_point);
+					//Instantiate(m_explosionFX,m_transform.position,Quaternion.identity);
 					Destroy(this.gameObject);
 				}
 			}
