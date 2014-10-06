@@ -18,6 +18,8 @@ namespace Minesweeper
         int N = 0;//炸弹数量
         int ZX, ZY;//雷区长宽
         int GameOver = 0;//判断游戏是否结束
+        int time = 0;//用时
+        int restMines;//剩余炸弹
         public Form1()
         {
             InitializeComponent();
@@ -30,10 +32,12 @@ namespace Minesweeper
 
         private void AddButton(int x, int y)
         {
-            //炸弹数量大概是20%
-            N = Convert.ToInt32(x * y * 0.20);
+            //炸弹数量大概是25%
+            N = Convert.ToInt32(x * y * 0.25);
             ZX = x;
             ZY = y;
+            restMines = N;
+            label4.Text = restMines.ToString() + " 个";
             //初始化BoomNumber（炸弹数量）数组
             BoomNumber = new int[x + 2, y + 2];
             for (int i = 0; i < x + 2; i++)
@@ -82,10 +86,14 @@ namespace Minesweeper
             //生成炸弹位置，判断是不是第一次点击，第一次点击不会出现炸弹
             if (isFirst == 0)
             {
+                //启动计时
+                this.timer1.Interval = 1000; //设置间隔时间，为毫秒；
+                this.timer1.Tick += new System.EventHandler(this.timer1_Tick);////设置每间隔3000毫秒（3秒）执行一次函数timer1_Tick
+                this.timer1.Start();
+
                 isFirst = 1;
                 int NNumber = 0;
-                int iSeed = 9;
-                Random ra = new Random(iSeed * 9);
+                Random ra = new Random();
                 //生成N个炸弹
                 while (true)
                 {
@@ -98,6 +106,8 @@ namespace Minesweeper
                             BoomNumber[x2, y2] = 10;
                             NNumber++;
                             if (NNumber == N) break;
+                            //bt[x2, y2].BackgroundImageLayout = ImageLayout.Stretch;
+                            //bt[x2, y2].BackgroundImage = Properties.Resources.boom2;
                         }
                         else
                         {
@@ -155,12 +165,14 @@ namespace Minesweeper
                 if (BoomFlag[x, y] == 0)//标记炸弹
                 {
                     BoomFlag[x, y] = 2;
+                    restMines--;//剩余炸弹减去1
                     bt[x, y].BackgroundImageLayout = ImageLayout.Stretch;
                     bt[x, y].BackgroundImage = Properties.Resources.flag;
                 }
                 else if (BoomFlag[x, y] == 2)//之前标记过的取消标记
                 {
                     BoomFlag[x, y] = 0;
+                    restMines++;//剩余炸弹加上1
                     bt[x, y].BackgroundImageLayout = ImageLayout.Stretch;
                     bt[x, y].BackgroundImage = Properties.Resources.plane;
                 }
@@ -192,16 +204,56 @@ namespace Minesweeper
                     }
                 }
             }
-            //踩到地雷结束询问是否重开
-            if (GameOver == 1)
+            label4.Text = restMines.ToString() + " 个";
+
+            //判断炸弹是否全部找到,然后结束
+            int sumBoom = 0;
+            if (restMines == 0)
             {
-                GameOver = 0;
-                DisplayMines(x, y);
-                MessageBox.Show("踩到地雷了，要重新开始吗？", "提示", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                for (int i = 1; i <= ZX; i++)
+                {
+                    for (int j = 1; j <= ZY; j++)
+                    {
+                        if (BoomFlag[i, j] == 2 && BoomNumber[i, j] == 10)
+                        {
+                            sumBoom++;
+                        }
+                    }
+                }
+                if (sumBoom == N) GameOver = 3;
+            }
+            //踩到地雷游戏结束
+            gameover(x, y);
+        }
+
+        //计时
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            time++;
+            label2.Text = time.ToString() + " 秒";
+        }
+
+        //游戏结束函数
+        private void gameover(int x,int y)
+        {
+            //踩到地雷结束询问是否重开
+            if (GameOver != 0)
+            {
+                this.timer1.Stop();
+                if (GameOver == 1)
+                {
+                    GameOver = 0;
+                    DisplayMines(x, y);
+                    MessageBox.Show("踩到地雷了，要重新开始吗？", "提示", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    //System.Diagnostics.Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                }
+                else if (GameOver == 3)
+                {
+                    MessageBox.Show("成功闯关！", "提示", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                }
                 Form1 a = new Form1();
                 a.Show();
                 this.Hide();
-                //System.Diagnostics.Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location);
             }
         }
 
@@ -382,6 +434,13 @@ namespace Minesweeper
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();
+        }
+
+        //按下重开按钮，游戏结束重开
+        private void button_gameover_Click_1(object sender, EventArgs e)
+        {
+            GameOver = 2;
+            gameover(0, 0);
         }
     }
 }
